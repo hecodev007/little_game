@@ -62,13 +62,17 @@ contract DsgNft is ERC721, InitializableOwner, ReentrancyGuard, Pausable
     string private _symbol;
 
     uint256 public price;
-    uint256 public price_other;
+    uint256 public price_busd;
     // mapping(uint256 => LibPart.NftInfo) private _nfts;
     address public _teamWallet;
     address public _rewardWallet;
-    constructor() public ERC721("", "")
+    constructor(string memory name_,
+        string memory symbol_,
+        address teamAddress,
+        string memory baseURI_) public ERC721("", "")
     {
         super._initialize();
+        initialize(name_, symbol_, teamAddress, baseURI_);
     }
 
     function initialize(
@@ -76,7 +80,7 @@ contract DsgNft is ERC721, InitializableOwner, ReentrancyGuard, Pausable
         string memory symbol_,
         address teamAddress,
         string memory baseURI_
-    ) public onlyOwner {
+    ) internal {
         _tokenId = 1000;
 
         _registerInterface(_INTERFACE_ID_GET_ROYALTIES);
@@ -116,9 +120,9 @@ contract DsgNft is ERC721, InitializableOwner, ReentrancyGuard, Pausable
         _crystalNft = CrystalNft(crystalNft_);
     }
 
-    function setPrice(uint256 price_, uint256 price_other_) public onlyOwner {
+    function setPrice(uint256 price_, uint256 price_busd_) public onlyOwner {
         price = price_;
-        price_other = price_other_;
+        price_busd = price_busd_;
     }
 
     function setFeeToken(address token, address token_other) public onlyOwner {
@@ -144,7 +148,7 @@ contract DsgNft is ERC721, InitializableOwner, ReentrancyGuard, Pausable
     ) public payable nonReentrant {
         require(amount >= 5, "low amount");
         require(_teamWallet != address(0), "_teamWallet");
-
+        require(address(_token) != address(0) || address(_busd) != address(0),"_token not set");
         //SafeERC20.safeTransferETH(_teamWallet, msg.value);
         if (address(_token) != address(0)) {
             SafeERC20.safeTransferFrom(_token, msg.sender, _teamWallet, price.mul(amount));
@@ -153,7 +157,7 @@ contract DsgNft is ERC721, InitializableOwner, ReentrancyGuard, Pausable
 
         if (address(_busd) != address(0)) {
             address upper = inviteLayer.getOneUpper(msg.sender);
-            uint256 money = price_other.mul(amount);
+            uint256 money = price_busd.mul(amount);
             if (upper != address(0)) {
                 SafeERC20.safeTransferFrom(_busd, msg.sender, upper, money.mul(5).div(100));
             }
@@ -208,7 +212,7 @@ contract DsgNft is ERC721, InitializableOwner, ReentrancyGuard, Pausable
         }
 
         if (address(_busd) != address(0)) {
-            SafeERC20.safeTransferFrom(_busd, msg.sender, _teamWallet, price_other);
+            SafeERC20.safeTransferFrom(_busd, msg.sender, _teamWallet, price_busd);
         }
         tokenId = _doMint(to);
     }

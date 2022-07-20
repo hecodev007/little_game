@@ -80,16 +80,19 @@ contract CrystalNft is ERC721, InitializableOwner, ReentrancyGuard, Pausable
         _;
     }
 
-    constructor() public ERC721("", "")
+    constructor(string memory name_,
+        string memory symbol_,
+        string memory baseURI_) public ERC721("", "")
     {
         super._initialize();
+        initialize(name_, symbol_, baseURI_);
     }
 
     function initialize(
         string memory name_,
         string memory symbol_,
         string memory baseURI_
-    ) public onlyOwner {
+    ) internal {
         _tokenId = 1000;
 
         _registerInterface(_INTERFACE_ID_GET_ROYALTIES);
@@ -137,16 +140,7 @@ contract CrystalNft is ERC721, InitializableOwner, ReentrancyGuard, Pausable
     function mint(
         address to
     ) public nonReentrant onlyOperator returns (uint256 tokenId){
-        //  require(msg.value >= price, "low price");
 
-        //TransferHelper.safeTransferETH(_teamWallet, msg.value);
-        //        if (address(_token) != address(0)) {
-        //            TransferHelper.safeTransferFrom(address(_token), msg.sender, _teamWallet, price);
-        //        }
-        //
-        //        if (address(_tokenOther) != address(0)) {
-        //            TransferHelper.safeTransferFrom(address(_tokenOther), msg.sender, _teamWallet, price_other);
-        //        }
         tokenId = _doMint(to);
     }
 
